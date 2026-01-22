@@ -117,7 +117,7 @@ namespace RoomReservationAPI.Controllers
                     throw;
                 }
             }
-            return NoContent();
+            return Ok($"Updated reservation for room: {reservation.RoomNumber}");
         }
 
         // DELETE: api/Reservation/5
@@ -131,7 +131,7 @@ namespace RoomReservationAPI.Controllers
             }
             _context.RoomReservations.Remove(reservation);
             await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok($"Removed reservation for room: {reservation.RoomNumber}");
         }
 
         private bool ReservationExists(int id)
