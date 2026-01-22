@@ -68,11 +68,6 @@ namespace RoomReservationAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutReservation(int id, RoomReservation reservation)
         {
-            if (id != reservation.Id)
-            {
-                return BadRequest();
-            }
-
             if (reservation.ReservationStart >= reservation.ReservationEnd)
             {
                 return BadRequest("Start time must be before end time.");
@@ -94,7 +89,19 @@ namespace RoomReservationAPI.Controllers
                 return BadRequest("Reservation overlaps with an existing reservation for the same room.");
             }
 
-            _context.Entry(reservation).State = EntityState.Modified;
+            
+            RoomReservation existingReservation = await _context.RoomReservations.FindAsync(id);
+
+            if (existingReservation == null)
+            {
+                return BadRequest($"No reservation with id: {id} found");
+            }
+            
+            existingReservation.ReservationStart = reservation.ReservationStart;
+            existingReservation.ReservationEnd = reservation.ReservationEnd;
+            existingReservation.RoomNumber = reservation.RoomNumber;
+            existingReservation.ReserverName = reservation.ReserverName;
+
             try
             {
                 await _context.SaveChangesAsync();
