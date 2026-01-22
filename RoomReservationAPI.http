@@ -24,8 +24,8 @@ Content-Type: application/json
 
 {
     "RoomNumber": 1,
-    "ReservationStart": "2026-01-22T16:00:00Z",
-    "ReservationEnd": "2026-01-22T18:00:00Z",
+    "ReservationStart": "2030-01-22T16:00:00Z",
+    "ReservationEnd": "2030-01-22T18:00:00Z",
     "ReserverName": "John Doe"
 }
 
@@ -37,10 +37,9 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "Id": 1,
     "RoomNumber": 1,
-    "ReservationStart": "2026-01-22T16:00:00Z",
-    "ReservationEnd": "2026-01-22T19:00:00Z",
+    "ReservationStart": "2030-01-23T16:00:00Z",
+    "ReservationEnd": "2030-01-23T19:00:00Z",
     "ReserverName": "John Doe Updated"
 }
 
