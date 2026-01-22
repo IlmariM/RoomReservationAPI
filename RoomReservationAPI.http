@@ -1,10 +1,5 @@
 @RoomReservationAPI_HostAddress = http://localhost:5063
 
-GET {{RoomReservationAPI_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
-
 # Get all reservations
 GET {{RoomReservationAPI_HostAddress}}/api/Reservation
 Accept: application/json
