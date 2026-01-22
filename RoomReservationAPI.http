@@ -1,0 +1,52 @@
+@RoomReservationAPI_HostAddress = http://localhost:5063
+
+GET {{RoomReservationAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+# Get all reservations
+GET {{RoomReservationAPI_HostAddress}}/api/Reservation
+Accept: application/json
+
+###
+
+# Get reservation by ID
+GET {{RoomReservationAPI_HostAddress}}/api/Reservation/1
+Accept: application/json
+
+###
+
+# Create a new reservation
+POST {{RoomReservationAPI_HostAddress}}/api/Reservation
+Accept: application/json
+Content-Type: application/json
+
+{
+    "RoomNumber": 1,
+    "ReservationStart": "2026-01-22T16:00:00Z",
+    "ReservationEnd": "2026-01-22T18:00:00Z",
+    "ReserverName": "John Doe"
+}
+
+###
+
+# Update a reservation
+PUT {{RoomReservationAPI_HostAddress}}/api/Reservation/1
+Accept: application/json
+Content-Type: application/json
+
+{
+    "Id": 1,
+    "RoomNumber": 1,
+    "ReservationStart": "2026-01-22T16:00:00Z",
+    "ReservationEnd": "2026-01-22T19:00:00Z",
+    "ReserverName": "John Doe Updated"
+}
+
+###
+
+# Delete a reservation
+DELETE {{RoomReservationAPI_HostAddress}}/api/Reservation/1
+
+###
