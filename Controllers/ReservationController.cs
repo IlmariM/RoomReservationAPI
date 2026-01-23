@@ -39,24 +39,10 @@ namespace RoomReservationAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<RoomReservation>> PostReservation(RoomReservation reservation)
         {
-            if (reservation.ReservationStart >= reservation.ReservationEnd)
+            var validation = await ValidateReservationAsync(reservation);
+            if (!validation.isValid)
             {
-                return BadRequest("Start time must be before end time.");
-            }
-
-            if (reservation.ReservationStart < DateTime.UtcNow)
-            {
-                return BadRequest("Start time must not be in the past.");
-            }
-
-            var overlapping = await _context.RoomReservations
-                .AnyAsync(r => r.RoomNumber == reservation.RoomNumber &&
-                               r.ReservationStart < reservation.ReservationEnd &&
-                               r.ReservationEnd > reservation.ReservationStart);
-
-            if (overlapping)
-            {
-                return BadRequest("Reservation overlaps with an existing reservation for the same room.");
+                return BadRequest(validation.errorMsg);
             }
 
             _context.RoomReservations.Add(reservation);
@@ -68,35 +54,20 @@ namespace RoomReservationAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutReservation(int id, RoomReservation reservation)
         {
-            if (reservation.ReservationStart >= reservation.ReservationEnd)
+
+            var validation = await ValidateReservationAsync(reservation, id);
+            if (!validation.isValid)
             {
-                return BadRequest("Start time must be before end time.");
+                return BadRequest(validation.errorMsg);
             }
 
-            if (reservation.ReservationStart < DateTime.UtcNow)
-            {
-                return BadRequest("Start time must not be in the past.");
-            }
-
-            var overlapping = await _context.RoomReservations
-                .AnyAsync(r => r.Id != id &&
-                               r.RoomNumber == reservation.RoomNumber &&
-                               r.ReservationStart < reservation.ReservationEnd &&
-                               r.ReservationEnd > reservation.ReservationStart);
-
-            if (overlapping)
-            {
-                return BadRequest("Reservation overlaps with an existing reservation for the same room.");
-            }
-
-            
             RoomReservation existingReservation = await _context.RoomReservations.FindAsync(id);
 
             if (existingReservation == null)
             {
                 return BadRequest($"No reservation with id: {id} found");
             }
-            
+
             existingReservation.ReservationStart = reservation.ReservationStart;
             existingReservation.ReservationEnd = reservation.ReservationEnd;
             existingReservation.RoomNumber = reservation.RoomNumber;
@@ -137,6 +108,45 @@ namespace RoomReservationAPI.Controllers
         private bool ReservationExists(int id)
         {
             return _context.RoomReservations.Any(e => e.Id == id);
+        }
+
+        private async Task<(bool isValid, string? errorMsg)> ValidateReservationAsync(RoomReservation reservation, int? id = null)
+        {
+            if (reservation.ReservationStart >= reservation.ReservationEnd)
+            {
+                return (false, "Start time must be before end time.");
+            }
+
+            if (reservation.ReservationStart < DateTime.UtcNow)
+            {
+                return (false, "Start time must not be in the past.");
+            }
+
+            // this monstrosity is because when creating a new reservation 
+            // you do not need to check if same id reservation already exists
+            // but when updating you do as not to fail validation because of the old reservation
+            bool overlapping;
+            if (id is not null)
+            {
+                overlapping = await _context.RoomReservations
+                .AnyAsync(r => r.Id != id &&
+                                r.RoomNumber == reservation.RoomNumber &&
+                                r.ReservationStart < reservation.ReservationEnd &&
+                                r.ReservationEnd > reservation.ReservationStart);
+            }
+            else
+            {
+                overlapping = await _context.RoomReservations
+                .AnyAsync(r => r.RoomNumber == reservation.RoomNumber &&
+                               r.ReservationStart < reservation.ReservationEnd &&
+                               r.ReservationEnd > reservation.ReservationStart);
+            }
+
+            if (overlapping)
+            {
+                return (false, "Reservation overlaps with an existing reservation for the same room.");
+            }
+            return (true, null);
         }
     }
 }
