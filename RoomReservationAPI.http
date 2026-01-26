@@ -13,15 +13,32 @@ Accept: application/json
 ###
 
 # Create a new reservation
+# TimeZoneId should be an IANA timezone identifier (e.g., "Europe/Helsinki", "America/New_York", "UTC")
 POST {{RoomReservationAPI_HostAddress}}/api/Reservation
 Accept: application/json
 Content-Type: application/json
 
 {
     "RoomNumber": 1,
-    "ReservationStart": "2030-01-22T16:00:00Z",
-    "ReservationEnd": "2030-01-22T18:00:00Z",
-    "ReserverName": "John Doe"
+    "ReservationStart": "2030-01-22T16:00:00",
+    "ReservationEnd": "2030-01-22T18:00:00",
+    "ReserverName": "John Doe",
+    "TimeZoneId": "Europe/Helsinki"
+}
+
+###
+
+# Create a new reservation (different timezone)
+POST {{RoomReservationAPI_HostAddress}}/api/Reservation
+Accept: application/json
+Content-Type: application/json
+
+{
+    "RoomNumber": 2,
+    "ReservationStart": "2030-01-22T10:00:00",
+    "ReservationEnd": "2030-01-22T12:00:00",
+    "ReserverName": "Jane Smith",
+    "TimeZoneId": "America/New_York"
 }
 
 ###
@@ -33,9 +50,10 @@ Content-Type: application/json
 
 {
     "RoomNumber": 1,
-    "ReservationStart": "2030-01-23T16:00:00Z",
-    "ReservationEnd": "2030-01-23T19:00:00Z",
-    "ReserverName": "John Doe Updated"
+    "ReservationStart": "2030-01-23T16:00:00",
+    "ReservationEnd": "2030-01-23T19:00:00",
+    "ReserverName": "John Doe Updated",
+    "TimeZoneId": "Europe/Helsinki"
 }
 
 ###

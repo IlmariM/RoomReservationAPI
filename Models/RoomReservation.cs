@@ -7,5 +7,6 @@ namespace RoomReservationAPI.Models
         public DateTime ReservationStart { get; set; }
         public DateTime ReservationEnd { get; set; }
         public string? ReserverName { get; set; }
+        public string TimeZoneId { get; set; } = "UTC"; // IANA timezone identifier (e.g., "Europe/Helsinki", "America/New_York")
     }
 }
