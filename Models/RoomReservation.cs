@@ -4,6 +4,7 @@ namespace RoomReservationAPI.Models
 {
     public class RoomReservation
     {
+        [Key]
         public int Id { get; set; }
         [Range(1, 5, ErrorMessage = "RoomNumber must be between 1 and 5")]
         public int RoomNumber { get; set; }
