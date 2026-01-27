@@ -12,6 +12,12 @@ Accept: application/json
 
 ###
 
+# Get next reservations starting from a specified time (paginated)
+GET {{RoomReservationAPI_HostAddress}}/api/Reservation/NextReservations
+Accept: application/json
+
+###
+
 # Create a new reservation
 # TimeZoneId should be an IANA timezone identifier (e.g., "Europe/Helsinki", "America/New_York", "UTC")
 POST {{RoomReservationAPI_HostAddress}}/api/Reservation
