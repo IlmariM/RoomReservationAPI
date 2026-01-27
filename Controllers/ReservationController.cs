@@ -12,9 +12,12 @@ namespace RoomReservationAPI.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public ReservationController(ApplicationDbContext context)
+        private readonly ILogger<ReservationController> _logger;
+
+        public ReservationController(ApplicationDbContext context, ILogger<ReservationController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>
@@ -28,10 +31,15 @@ namespace RoomReservationAPI.Controllers
                 // Assume the incoming datetime is in the specified timezone and convert to UTC
                 return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZone);
             }
-            catch
+            catch (InvalidTimeZoneException)
             {
-                // If timezone is invalid, assume it's already UTC
+                _logger.LogWarning("Invalid timezone: {TimeZoneId}", timeZoneId);
                 return dateTime;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error converting timezone");
+                throw;
             }
         }
 
@@ -45,10 +53,15 @@ namespace RoomReservationAPI.Controllers
                 var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
                 return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, timeZone);
             }
-            catch
+            catch (InvalidTimeZoneException)
             {
-                // If timezone is invalid, return as UTC
+                _logger.LogWarning("Invalid timezone: {TimeZoneId}", timeZoneId);
                 return utcDateTime;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error converting timezone");
+                throw;
             }
         }
 
@@ -79,6 +92,7 @@ namespace RoomReservationAPI.Controllers
             var reservation = await _context.RoomReservations.FindAsync(id);
             if (reservation == null)
             {
+                _logger.LogError("No reservatioin found with {id}", id);
                 return NotFound();
             }
 
@@ -104,10 +118,11 @@ namespace RoomReservationAPI.Controllers
             reservation.ReservationStart = ConvertToUtc(reservation.ReservationStart, reservation.TimeZoneId);
             reservation.ReservationEnd = ConvertToUtc(reservation.ReservationEnd, reservation.TimeZoneId);
 
-            var validation = await ValidateReservationAsync(reservation);
-            if (!validation.isValid)
+            var (isValid, errorMsg) = await ValidateReservationAsync(reservation);
+            if (!isValid)
             {
-                return BadRequest(validation.errorMsg);
+                _logger.LogError("Error validating reservation with message: {errorMsg}", errorMsg);
+                return BadRequest(errorMsg);
             }
 
             _context.RoomReservations.Add(reservation);
@@ -147,13 +162,15 @@ namespace RoomReservationAPI.Controllers
             var (isValid, errorMsg) = await ValidateReservationAsync(reservationForValidation, id);
             if (!isValid)
             {
+                _logger.LogError("Error validating reservation with message: {errorMsg}", errorMsg);
                 return BadRequest(errorMsg);
             }
 
-            RoomReservation existingReservation = await _context.RoomReservations.FindAsync(id);
+            RoomReservation? existingReservation = await _context.RoomReservations.FindAsync(id);
 
             if (existingReservation == null)
             {
+                _logger.LogError("No reservation with id: {id} found", id);
                 return BadRequest($"No reservation with id: {id} found");
             }
 
@@ -171,10 +188,12 @@ namespace RoomReservationAPI.Controllers
             {
                 if (!ReservationExists(id))
                 {
+                    _logger.LogError("Reservation with id: {id} was deleted before it could be updated", id);
                     return NotFound();
                 }
                 else
                 {
+                    _logger.LogError("Reservation with id: {id} was modified first by someone else", id);
                     throw;
                 }
             }
@@ -193,6 +212,7 @@ namespace RoomReservationAPI.Controllers
             var reservation = await _context.RoomReservations.FindAsync(id);
             if (reservation == null)
             {
+                _logger.LogError("No reservation with id: {id} found", id);
                 return NotFound();
             }
             _context.RoomReservations.Remove(reservation);
