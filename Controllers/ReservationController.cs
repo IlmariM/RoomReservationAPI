@@ -193,7 +193,7 @@ namespace RoomReservationAPI.Controllers
             }
             _context.RoomReservations.Remove(reservation);
             await _context.SaveChangesAsync();
-            return Ok($"Removed reservation for room: {reservation.RoomNumber}");
+            return NoContent();
         }
 
         private bool ReservationExists(int id)
