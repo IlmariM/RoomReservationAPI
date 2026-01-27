@@ -20,51 +20,6 @@ namespace RoomReservationAPI.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Converts a DateTime from the specified timezone to UTC
-        /// </summary>
-        private DateTime ConvertToUtc(DateTime dateTime, string timeZoneId)
-        {
-            try
-            {
-                var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-                // Assume the incoming datetime is in the specified timezone and convert to UTC
-                return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZone);
-            }
-            catch (InvalidTimeZoneException) // This should no longer happen but i'm leaving it just in case
-            {
-                _logger.LogWarning("Invalid timezone: {TimeZoneId}", timeZoneId);
-                return dateTime;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error converting timezone");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Converts a DateTime from UTC to the specified timezone
-        /// </summary>
-        private DateTime ConvertFromUtc(DateTime utcDateTime, string timeZoneId)
-        {
-            try
-            {
-                var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-                return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, timeZone);
-            }
-            catch (InvalidTimeZoneException)
-            {
-                _logger.LogWarning("Invalid timezone: {TimeZoneId}", timeZoneId);
-                return utcDateTime;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error converting timezone");
-                throw;
-            }
-        }
-
         // GET: api/Reservation
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RoomReservation>>> GetReservations()
@@ -256,6 +211,51 @@ namespace RoomReservationAPI.Controllers
                 return (false, "Reservation overlaps with an existing reservation for the same room.");
             }
             return (true, null);
+        }
+
+        /// <summary>
+        /// Converts a DateTime from the specified timezone to UTC
+        /// </summary>
+        private DateTime ConvertToUtc(DateTime dateTime, string timeZoneId)
+        {
+            try
+            {
+                var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                // Assume the incoming datetime is in the specified timezone and convert to UTC
+                return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZone);
+            }
+            catch (InvalidTimeZoneException) // This should no longer happen but i'm leaving it just in case
+            {
+                _logger.LogWarning("Invalid timezone: {TimeZoneId}", timeZoneId);
+                return dateTime;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error converting timezone");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Converts a DateTime from UTC to the specified timezone
+        /// </summary>
+        private DateTime ConvertFromUtc(DateTime utcDateTime, string timeZoneId)
+        {
+            try
+            {
+                var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, timeZone);
+            }
+            catch (InvalidTimeZoneException)
+            {
+                _logger.LogWarning("Invalid timezone: {TimeZoneId}", timeZoneId);
+                return utcDateTime;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error converting timezone");
+                throw;
+            }
         }
     }
 }
