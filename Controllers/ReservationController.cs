@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RoomReservationAPI.Data;
+using RoomReservationAPI.Classes;
 using RoomReservationAPI.Models;
-using System.Globalization;
 
 namespace RoomReservationAPI.Controllers
 {
@@ -178,7 +178,12 @@ namespace RoomReservationAPI.Controllers
                     throw;
                 }
             }
-            return Ok($"Updated reservation for room: {reservation.RoomNumber}");
+            return Ok(new ApiResponse<RoomReservation>
+            {
+                Success = true,
+                Message = "Reservation updated",
+                Data = existingReservation
+            });
         }
 
         // DELETE: api/Reservation/5
