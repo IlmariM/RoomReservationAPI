@@ -49,6 +49,35 @@ namespace RoomReservationAPI.Controllers
             return responseReservation;
         }
 
+        // GET: api/Reservation/NextReservations
+        [HttpGet("NextReservations")]
+        public async Task<ActionResult<IEnumerable<RoomReservation>>> GetNextReservations(DateTime? time = null, int pageNumber = 1, int pageSize = 10)
+        {
+            if (pageNumber < 1)
+            {
+                _logger.LogWarning("Invalid pageNumber: {pageNumber}. Using default value 1.", pageNumber);
+                pageNumber = 1;
+            }
+            if (pageSize < 1)
+            {
+                _logger.LogWarning("Invalid pageSize: {pageSize}. Using default value 10.", pageSize);
+                pageSize = 10;
+            }
+
+            // Query reservations starting from the specified time
+            var reservations = await _context.RoomReservations
+                .Where(r => r.ReservationStart >= (time ?? DateTime.UtcNow))
+                .OrderBy(r => r.ReservationStart)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Convert times back from UTC to each reservation's timezone for response
+            var responseReservations = reservations.Select(r => ToResponseReservation(r)).ToList();
+
+            return responseReservations;
+        }
+
         // POST: api/Reservation
         [HttpPost]
         public async Task<ActionResult<RoomReservation>> PostReservation(RoomReservation reservation)
