@@ -166,7 +166,7 @@ namespace RoomReservationAPI.Controllers
             {
                 if (!ReservationExists(id))
                 {
-                    _logger.LogError("Reservation with id: {id} was deleted before it could be updated", id);
+                    _logger.LogError("Reservation with id: {id} was deleted by someone before it could be updated", id);
                     return NotFound();
                 }
                 else
