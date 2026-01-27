@@ -72,7 +72,7 @@ namespace RoomReservationAPI.Controllers
             var reservations = await _context.RoomReservations.ToListAsync();
 
             // Convert times back from UTC to each reservation's timezone for response
-           var responseReservations = reservations.Select(r => ToResponseReservation(r)).ToList();
+            var responseReservations = reservations.Select(r => ToResponseReservation(r)).ToList();
 
             return responseReservations;
         }
@@ -227,25 +227,11 @@ namespace RoomReservationAPI.Controllers
                 return (false, "Start time must not be in the past.");
             }
 
-            // this monstrosity is because when creating a new reservation 
-            // you do not need to check if same id reservation already exists
-            // but when updating you do as not to fail validation because of the old reservation
-            bool overlapping;
-            if (id is not null)
-            {
-                overlapping = await _context.RoomReservations
-                .AnyAsync(r => r.Id != id &&
-                                r.RoomNumber == reservation.RoomNumber &&
-                                r.ReservationStart < reservation.ReservationEnd &&
-                                r.ReservationEnd > reservation.ReservationStart);
-            }
-            else
-            {
-                overlapping = await _context.RoomReservations
-                .AnyAsync(r => r.RoomNumber == reservation.RoomNumber &&
-                               r.ReservationStart < reservation.ReservationEnd &&
-                               r.ReservationEnd > reservation.ReservationStart);
-            }
+            var overlapping = await _context.RoomReservations.AnyAsync(r =>
+                r.RoomNumber == reservation.RoomNumber &&
+                (id == null || r.Id != id) && // Exclude current reservation if updating
+                r.ReservationStart < reservation.ReservationEnd &&
+                r.ReservationEnd > reservation.ReservationStart);
 
             if (overlapping)
             {
