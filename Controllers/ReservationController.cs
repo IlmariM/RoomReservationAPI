@@ -31,7 +31,7 @@ namespace RoomReservationAPI.Controllers
                 // Assume the incoming datetime is in the specified timezone and convert to UTC
                 return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZone);
             }
-            catch (InvalidTimeZoneException)
+            catch (InvalidTimeZoneException) // This should no longer happen but i'm leaving it just in case
             {
                 _logger.LogWarning("Invalid timezone: {TimeZoneId}", timeZoneId);
                 return dateTime;
@@ -98,6 +98,15 @@ namespace RoomReservationAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<RoomReservation>> PostReservation(RoomReservation reservation)
         {
+            try
+            {
+                TimeZoneInfo.FindSystemTimeZoneById(reservation.TimeZoneId);
+            }
+            catch
+            {
+                _logger.LogError("Error validating timezoneId: {reservation.TimeZoneId}.", reservation.TimeZoneId);
+                return BadRequest($"Error validating timezoneId: {reservation.TimeZoneId}. Input a valid Id.");
+            }
             // Convert incoming times from the specified timezone to UTC for storage
             reservation.ReservationStart = ConvertToUtc(reservation.ReservationStart, reservation.TimeZoneId);
             reservation.ReservationEnd = ConvertToUtc(reservation.ReservationEnd, reservation.TimeZoneId);
@@ -122,6 +131,15 @@ namespace RoomReservationAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutReservation(int id, RoomReservation reservation)
         {
+            try
+            {
+                TimeZoneInfo.FindSystemTimeZoneById(reservation.TimeZoneId);
+            }
+            catch
+            {
+                _logger.LogError("Error validating timezoneId: {reservation.TimeZoneId}.", reservation.TimeZoneId);
+                return BadRequest($"Error validating timezoneId: {reservation.TimeZoneId}. Input a valid Id.");
+            }
             // Convert incoming times from the specified timezone to UTC for storage
             var utcStart = ConvertToUtc(reservation.ReservationStart, reservation.TimeZoneId);
             var utcEnd = ConvertToUtc(reservation.ReservationEnd, reservation.TimeZoneId);
