@@ -72,15 +72,7 @@ namespace RoomReservationAPI.Controllers
             var reservations = await _context.RoomReservations.ToListAsync();
 
             // Convert times back from UTC to each reservation's timezone for response
-            var responseReservations = reservations.Select(r => new RoomReservation
-            {
-                Id = r.Id,
-                RoomNumber = r.RoomNumber,
-                ReservationStart = ConvertFromUtc(r.ReservationStart, r.TimeZoneId),
-                ReservationEnd = ConvertFromUtc(r.ReservationEnd, r.TimeZoneId),
-                ReserverName = r.ReserverName,
-                TimeZoneId = r.TimeZoneId
-            }).ToList();
+           var responseReservations = reservations.Select(r => ToResponseReservation(r)).ToList();
 
             return responseReservations;
         }
@@ -97,15 +89,7 @@ namespace RoomReservationAPI.Controllers
             }
 
             // Convert times back from UTC to the reservation's timezone for response
-            var responseReservation = new RoomReservation
-            {
-                Id = reservation.Id,
-                RoomNumber = reservation.RoomNumber,
-                ReservationStart = ConvertFromUtc(reservation.ReservationStart, reservation.TimeZoneId),
-                ReservationEnd = ConvertFromUtc(reservation.ReservationEnd, reservation.TimeZoneId),
-                ReserverName = reservation.ReserverName,
-                TimeZoneId = reservation.TimeZoneId
-            };
+            var responseReservation = ToResponseReservation(reservation);
 
             return responseReservation;
         }
@@ -129,15 +113,7 @@ namespace RoomReservationAPI.Controllers
             await _context.SaveChangesAsync();
 
             // Convert back to the reserver's timezone for response
-            var responseReservation = new RoomReservation
-            {
-                Id = reservation.Id,
-                RoomNumber = reservation.RoomNumber,
-                ReservationStart = ConvertFromUtc(reservation.ReservationStart, reservation.TimeZoneId),
-                ReservationEnd = ConvertFromUtc(reservation.ReservationEnd, reservation.TimeZoneId),
-                ReserverName = reservation.ReserverName,
-                TimeZoneId = reservation.TimeZoneId
-            };
+            var responseReservation = ToResponseReservation(reservation);
 
             return CreatedAtAction(nameof(GetReservation), new { id = reservation.Id }, responseReservation);
         }
@@ -223,6 +199,19 @@ namespace RoomReservationAPI.Controllers
         private bool ReservationExists(int id)
         {
             return _context.RoomReservations.Any(e => e.Id == id);
+        }
+
+        private RoomReservation ToResponseReservation(RoomReservation dbReservation)
+        {
+            return new RoomReservation
+            {
+                Id = dbReservation.Id,
+                RoomNumber = dbReservation.RoomNumber,
+                ReservationStart = ConvertFromUtc(dbReservation.ReservationStart, dbReservation.TimeZoneId),
+                ReservationEnd = ConvertFromUtc(dbReservation.ReservationEnd, dbReservation.TimeZoneId),
+                ReserverName = dbReservation.ReserverName,
+                TimeZoneId = dbReservation.TimeZoneId
+            };
         }
 
         private async Task<(bool isValid, string? errorMsg)> ValidateReservationAsync(RoomReservation reservation, int? id = null)
